@@ -131,3 +131,4 @@ dmypy.json
 *.iml
 *.lst
 Whoiser.csv
+*.csv

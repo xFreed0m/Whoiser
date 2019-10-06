@@ -79,32 +79,34 @@ def url_list_maker(urllist_arg):
         return [u.strip() for u in url_object.readlines()]
 
 
-def output(domain, registrar, emails, name, organization, output_file_name):
+def output(target, domain, registrar, emails, name, organization, output_file_name):
     try:
         with open(output_file_name + ".csv", mode='a') as log_file:
             creds_writer = csv.writer(log_file, delimiter=',', quotechar='"')
-            creds_writer.writerow([domain, registrar, emails, name, organization])
+            creds_writer.writerow([target, domain, registrar, emails, name, organization])
     except Exception as output_err:
         exception(output_err)
 
 
 def whoiser(targets, output_file_name):
-    output('Domain', 'Registrar', 'Emails', 'Name', 'Organization', output_file_name)
+    output('Target', 'Domain', 'Registrar', 'Emails', 'Name', 'Organization', output_file_name)
     for t in targets:
         try:
             w = whois.whois(t)
-            print("Domain: " + str(w.domain_name))
-            print("Registrar: " + str(w.registrar))
-            print("Emails: " + str(w.emails))
-            print("Name: " + str(w.name))
-            print("Organization: " + str(w.org) + "\n")
-            output(str(w.domain_name), str(w.registrar), str(w.emails), str(w.name), str(w.org),
-                   output_file_name)
+            LOGGER.info("[+] Querying: %s" % t)
+            LOGGER.info("[*] ***************************")
+            LOGGER.info("[+] Domain: " + str(w.domain_name))
+            LOGGER.info("[+] Registrar: " + str(w.registrar))
+            LOGGER.info("[+] Emails: " + str(w.emails))
+            LOGGER.info("[+] Name: " + str(w.name))
+            LOGGER.info("[+] Organization: " + str(w.org) + "\n")
+            output(str(t), str(w.domain_name), str(w.registrar), str(w.emails), str(w.name),
+                   str(w.org), output_file_name)
         except whois.parser.PywhoisError as e:
-            print("Domain %s seems to be NOT registered" % t)
+            LOGGER.warning("Domain %s seems to be NOT registered" % t)
             exception(e)
         except KeyboardInterrupt:
-            print("[!] [CTRL+C] Stopping the tool")
+            LOGGER.critical("[!] [CTRL+C] Stopping the tool")
             exit(1)
         except Exception as err:
             exception(err)
@@ -125,6 +127,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# w = whois.whois('juevespachelebrear.com')
-# print(w)
