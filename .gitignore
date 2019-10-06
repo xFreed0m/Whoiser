@@ -127,3 +127,6 @@ dmypy.json
 .log
 .xml
 .lst
+*.xml
+*.iml
+*.lst
