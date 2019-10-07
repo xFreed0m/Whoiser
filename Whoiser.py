@@ -93,17 +93,29 @@ def whoiser(targets, output_file_name):
     for t in targets:
         try:
             w = whois.whois(t)
-            LOGGER.info("[+] Querying: %s" % t)
-            LOGGER.info("[*] ***************************")
-            LOGGER.info("[+] Domain: " + str(w.domain_name))
-            LOGGER.info("[+] Registrar: " + str(w.registrar))
-            LOGGER.info("[+] Emails: " + str(w.emails))
-            LOGGER.info("[+] Name: " + str(w.name))
-            LOGGER.info("[+] Organization: " + str(w.org) + "\n")
-            output(str(t), str(w.domain_name), str(w.registrar), str(w.emails), str(w.name),
-                   str(w.org), output_file_name)
+            if w.domain is None:
+                LOGGER.info("[+] Querying: %s" % t)
+                LOGGER.info("[*] ***************************")
+                LOGGER.info("[!] No details for this domain")
+                output(str(t), "No details", "No details", "No details", "No details",
+                       "No details", output_file_name)
+            else:
+                LOGGER.info("[+] Querying: %s" % t)
+                LOGGER.info("[*] ***************************")
+                LOGGER.info("[+] Domain: " + str(w.domain_name))
+                LOGGER.info("[+] Registrar: " + str(w.registrar))
+                LOGGER.info("[+] Emails: " + str(w.emails))
+                LOGGER.info("[+] Name: " + str(w.name))
+                LOGGER.info("[+] Organization: " + str(w.org) + "\n")
+                output(str(t), str(w.domain_name), str(w.registrar), str(w.emails), str(w.name),
+                       str(w.org), output_file_name)
         except whois.parser.PywhoisError as e:
             LOGGER.warning("Domain %s seems to be NOT registered" % t)
+            LOGGER.info("[+] Querying: %s" % t)
+            LOGGER.info("[*] ***************************")
+            LOGGER.info("[!] Domain %s seems to be NOT registered" % t)
+            output(str(t), "Not registered", "Not registered", "Not registered", "Not registered",
+                   "Not registered", output_file_name)
             exception(e)
         except KeyboardInterrupt:
             LOGGER.critical("[!] [CTRL+C] Stopping the tool")
