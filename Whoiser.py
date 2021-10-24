@@ -84,7 +84,7 @@ def output(target, domain, registrar, emails, name, organization, country_name, 
     try:
         with open(output_file_name + ".csv", mode='a') as log_file:
             creds_writer = csv.writer(log_file, delimiter=',', quotechar='"')
-            creds_writer.writerow([target, domain, registrar, emails, name, organization])
+            creds_writer.writerow([target, domain, registrar, emails, name, organization, country_name, city])
     except Exception as output_err:
         exception(output_err)
 
