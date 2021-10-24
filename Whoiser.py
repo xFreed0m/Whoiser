@@ -7,6 +7,7 @@ import argparse
 import datetime
 import logging
 import csv
+import requests
 from colorlog import ColoredFormatter
 
 
@@ -79,7 +80,7 @@ def url_list_maker(urllist_arg):
         return [u.strip() for u in url_object.readlines()]
 
 
-def output(target, domain, registrar, emails, name, organization, output_file_name):
+def output(target, domain, registrar, emails, name, organization, country_name, city, output_file_name):
     try:
         with open(output_file_name + ".csv", mode='a') as log_file:
             creds_writer = csv.writer(log_file, delimiter=',', quotechar='"')
@@ -89,16 +90,22 @@ def output(target, domain, registrar, emails, name, organization, output_file_na
 
 
 def whoiser(targets, output_file_name):
-    output('Target', 'Domain', 'Registrar', 'Emails', 'Name', 'Organization', output_file_name)
+    output('Target', 'Domain', 'Registrar', 'Emails', 'Name', 'Organization','Country name', 'City', output_file_name)
     for t in targets:
         try:
+            response = requests.get("https://geolocation-db.com/json/%s&position=true" % t).json()
+            country = response['country_name']
+            city = response['city']
+            print(str(country) + " "  + str(city))
             w = whois.whois(t)
             if w.domain is None:
                 LOGGER.info("[+] Querying: %s" % t)
                 LOGGER.info("[*] ***************************")
                 LOGGER.info("[!] No details for this domain")
+                LOGGER.info("[+] Country: " + str(country))
+                LOGGER.info("[+] City: " + str(city))
                 output(str(t), "No details", "No details", "No details", "No details",
-                       "No details", output_file_name)
+                       "No details", str(country), str(city), output_file_name)
             else:
                 LOGGER.info("[+] Querying: %s" % t)
                 LOGGER.info("[*] ***************************")
@@ -107,15 +114,23 @@ def whoiser(targets, output_file_name):
                 LOGGER.info("[+] Emails: " + str(w.emails))
                 LOGGER.info("[+] Name: " + str(w.name))
                 LOGGER.info("[+] Organization: " + str(w.org) + "\n")
+
+                LOGGER.info("[*] ***************************")
+                LOGGER.info("[+] Country: " + str(country))
+                LOGGER.info("[+] City: " + str(city))
                 output(str(t), str(w.domain_name), str(w.registrar), str(w.emails), str(w.name),
-                       str(w.org), output_file_name)
+                    str(w.org), str(country), str(city), output_file_name)
+            
         except whois.parser.PywhoisError as e:
             LOGGER.warning("Domain %s seems to be NOT registered" % t)
             LOGGER.info("[+] Querying: %s" % t)
             LOGGER.info("[*] ***************************")
             LOGGER.info("[!] Domain %s seems to be NOT registered" % t)
+            LOGGER.info("[*] ***************************")
+            LOGGER.info("[+] Country: " + str(country))
+            LOGGER.info("[+] City: " + str(city))
             output(str(t), "Not registered", "Not registered", "Not registered", "Not registered",
-                   "Not registered", output_file_name)
+                   "Not registered", str(country), str(city), output_file_name)
             exception(e)
         except KeyboardInterrupt:
             LOGGER.critical("[!] [CTRL+C] Stopping the tool")
